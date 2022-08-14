@@ -143,48 +143,24 @@ class PostsPagesTests(TestCase):
 
     def test_index_page_cache(self):
         """Проверка кэширования главной страницы."""
-        # user_check_cache = User.objects.create_user(username='check_cache')
-        # post_check_cache = Post.objects.create(
-        #     author=user_check_cache,
-        #     text='Тестовый пост для проверки кэширования',
-        # )
-        # response_1 = self.guest_client.get(reverse('posts:index'))
-        # self.assertIn(
-        #     post_check_cache,
-        #     response_1.context['page_obj'],
-        # )
-
-        # post_check_cache.delete()
-        # response_2 = self.guest_client.get(reverse('posts:index'))
-        # self.assertIn(
-        #     post_check_cache,
-        #     response_2.context['page_obj'],
-        # )
-
-        # cache.clear()
-        # response_3 = self.guest_client.get(reverse('posts:index'))
-        # self.assertNotContains(
-        #     response_3.context['page_obj'],
-        #     post_check_cache.text
-        # )
-        response_1 = self.guest_client.get(reverse('posts:index'))
-        self.assertContains(
-            response_1,
-            PostsPagesTests.post_check_cache.text,
-        )
+        response = self.guest_client.get(reverse('posts:index'))
+        post_text = response.content
 
         PostsPagesTests.post_check_cache.delete()
-        response_2 = self.guest_client.get(reverse('posts:index'))
-        self.assertContains(
-            response_2,
-            PostsPagesTests.post_check_cache.text,
+        response = self.guest_client.get(reverse('posts:index'))
+        post_cache = response.content
+
+        self.assertEqual(
+            post_text,
+            post_cache,
         )
 
         cache.clear()
-        response_3 = self.guest_client.get(reverse('posts:index'))
-        self.assertNotContains(
-            response_3,
-            PostsPagesTests.post_check_cache.text,
+        response = self.guest_client.get(reverse('posts:index'))
+        post_cache_clear = response.content
+        self.assertNotEqual(
+            post_cache,
+            post_cache_clear,
         )
 
     def test_group_list_show_correct_context(self):
