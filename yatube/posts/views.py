@@ -46,9 +46,12 @@ def profile(request, username):
 
     following = False
     user = request.user
-    if user.is_authenticated:
-        if request.user.follower.filter(author=author).exists():
-            following = True
+    if (
+        user.is_authenticated and request.user.follower.filter(
+            author=author
+        ).exists()
+    ):
+        following = True
 
     context = {
         'author': author,
