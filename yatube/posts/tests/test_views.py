@@ -8,7 +8,8 @@ from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from posts.models import Comment, Follow, Group, Post
+
+from ..models import Comment, Follow, Group, Post
 
 User = get_user_model()
 
@@ -336,18 +337,18 @@ class PostsPagesTests(TestCase):
         )
         self.assertEqual(len(response.context['page_obj']), 0)
 
-    def test_follow_unfollow_available_for_authorized_user(self):
+    def test_follow_available_for_authorized_user(self):
         """Авторизованный пользователь может подписываться на
-        других пользователей и удалять их из подписок."""
+        других пользователей."""
         follow_count = Follow.objects.count()
-        response_1 = self.authorized_client.get(
+        response = self.authorized_client.get(
             reverse(
                 'posts:profile_follow',
                 kwargs={'username': self.user_not_author.username},
             )
         )
         self.assertRedirects(
-            response_1,
+            response,
             reverse('posts:follow_index')
         )
         self.assertEqual(Follow.objects.count(), follow_count + 1)
@@ -358,17 +359,26 @@ class PostsPagesTests(TestCase):
             ).exists()
         )
 
-        response_2 = self.authorized_client.get(
+    def test_unfollow_available_for_authorized_user(self):
+        """Авторизованный пользователь может
+        удалять других пользователей из подписок."""
+        follow_count = Follow.objects.filter(
+            author=PostsPagesTests.user
+        ).count()
+        response = self.authorized_client.get(
             reverse(
                 'posts:profile_unfollow',
-                kwargs={'username': self.user_not_author.username},
+                kwargs={'username': PostsPagesTests.user.username},
             )
         )
         self.assertRedirects(
-            response_2,
+            response,
             reverse('posts:follow_index')
         )
-        self.assertEqual(Follow.objects.count(), follow_count)
+        self.assertEqual(
+            Follow.objects.filter(author=PostsPagesTests.user).count(),
+            follow_count - 1
+        )
 
     def test_new_post_in_followers_follow_index(self):
         """Новая запись пользователя появляется в ленте тех, кто на него

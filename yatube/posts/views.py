@@ -8,10 +8,10 @@ from .forms import CommentForm, PostForm
 from .models import Comment, Follow, Group, Post, User
 
 
-@cache_page(60 * 20, key_prefix='index_page')
+@cache_page(20, key_prefix='index_page')
 def index(request):
     """Главная страница."""
-    post_list = Post.objects.all()
+    post_list = Post.objects.select_related('group').all()
     paginator = Paginator(post_list, settings.POSTS_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -47,8 +47,7 @@ def profile(request, username):
     following = False
     user = request.user
     if user.is_authenticated:
-        follower = request.user.follower.filter(author__username=username)
-        if follower:
+        if request.user.follower.filter(author=author).exists():
             following = True
 
     context = {
@@ -157,22 +156,26 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     """Подписка на интересующего автора."""
-    if request.user == User.objects.get(username=username):
+    author = get_object_or_404(User, username=username)
+    if request.user == author:
         return redirect('posts:follow_index')
-    else:
-        Follow.objects.get_or_create(
-            user=request.user,
-            author=User.objects.get(username=username)
-        )
-        return redirect('posts:follow_index')
+
+    Follow.objects.get_or_create(
+        user=request.user,
+        author=author
+    )
+    return redirect('posts:follow_index')
 
 
 @login_required
 def profile_unfollow(request, username):
     """Отписка от неинтересующего автора."""
     follow = (
-        Follow.objects.filter
-        (user=request.user).filter(author__username=username)
+        Follow.objects.filter(
+            user=request.user
+        ).filter(
+            author__username=username
+        )
     )
     follow.delete()
     return redirect('posts:follow_index')
