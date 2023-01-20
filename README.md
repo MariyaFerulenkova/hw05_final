@@ -1,3 +1,23 @@
-# hw05_final
-
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+## Проект Yatube
+### Описание
+Социальная сеть для блогеров с возможностью создавать учетную запись, публиковать записи, подписываться на любимых авторов и отмечать понравившиеся записи.
+### Основные используемые технологии
+- Python 3.7
+- Django 2.2.19
+### Запуск проекта в dev-режиме
+- Клонируйте репозиторий
+- Находясь в директории приложения, установите и активируйте виртуальное окружение
+```sh
+python -m venv venv && . source venv/Scripts/activate  # Windows
+python3 -m venv venv && . venv/bin/activate  # MacOS и Linux
+```
+- Установите зависимости из файла requirements.txt при помощи команды:
+```sh
+pip install -r requirements.txt
+```
+В папке с файлом manage.py выполните команду:
+```sh
+python manage.py runserver
+```
+### Автор
+Мария Феруленкова
